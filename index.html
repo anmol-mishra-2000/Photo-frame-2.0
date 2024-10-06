@@ -2,8 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Event Photo Frame</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DP for Sanjay</title>
+    <meta property="og:title" content="DP Creator for Sanjay" />
+    <meta property="og:description" content="Get your DP to support Sanjay" />
+    <meta property="og:image" content="https://github.com/Rishu-5/Sanjay_DP/blob/main/Image.jpg?raw=true" />
+    <meta property="og:url" content="https://rishu-5.github.io/Sanjay_DP/" />
+    <meta property="og:type" content="tool" />
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -14,14 +19,12 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Prevent body from scrolling */
         }
 
         h1 {
             margin-top: 20px;
             font-size: 2rem;
             color: #333;
-            text-align: center;
         }
 
         .container {
@@ -70,7 +73,6 @@
             display: block;
             max-width: 100%;
             height: auto;
-            touch-action: none; /* Disable default touch actions (like scrolling and zooming) */
         }
 
         #downloadBtn {
@@ -94,54 +96,94 @@
             cursor: not-allowed;
         }
 
-        .zoom-buttons {
-            margin-top: 10px;
+        input[type="range"] {
+            width: 80%;
+            margin: 10px;
         }
 
-        .zoom-buttons button {
+        #video {
+            display: none;
+            width: 100%;
+            max-width: 300px;
+            margin: 0 auto;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 1.2rem;
+            color: #333;
+            background-color: #f4f4f9;
             padding: 10px;
-            font-size: 18px;
-            margin: 5px;
-            background-color: #007BFF;
-            color: white;
-            border: none;
-            border-radius: 5px;
+            border-top: 1px solid #ddd;
+        }
+
+        footer span {
+            color: #007BFF;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1>Get your customized profile photo and show your support for CA Sanjay Agarwal — Ballot No. 1 for Central Council of ICAI</h1>
+    <h1>Get your customized profile photo and show your support for CA. Agarwal Sanjay Kumar — Ballot No. 1 for Central Council of ICAI</h1>
 
     <div class="container">
         <!-- Buttons to either upload or capture photo -->
         <div class="buttons">
             <input type="file" id="uploadPhoto" accept="image/*">
-        </div>
-        
-        <canvas id="photoCanvas"></canvas>
-        
-        <!-- Zoom In and Zoom Out buttons placed above the download button -->
-        <div class="zoom-buttons">
-            <button id="zoomInBtn">Zoom In</button>
-            <button id="zoomOutBtn">Zoom Out</button>
+
+            <!-- New button for camera capture -->
+            <button id="captureBtn">Capture Photo with Camera</button>
         </div>
 
-        <br>
+        <!-- Video element for showing camera feed -->
+        <video id="video" width="300" height="300" autoplay style="display:none;"></video>
+
+        <canvas id="photoCanvas"></canvas>
+        
+        <!-- Zoom and Move Sliders -->
+        <div>
+            <label for="zoomSlider">Zoom</label>
+            <input type="range" id="zoomSlider" min="0.5" max="2.0" step="0.1" value="1">
+        </div>
+
+        <div>
+            <label for="moveHorizontalSlider">Move Left/Right</label>
+            <input type="range" id="moveHorizontalSlider" min="-100" max="100" step="1" value="0">
+        </div>
+
+        <div>
+            <label for="moveVerticalSlider">Move Up/Down</label>
+            <input type="range" id="moveVerticalSlider" min="-100" max="100" step="1" value="0">
+        </div>
+
         <button id="downloadBtn" disabled>Download Photo</button>
     </div>
+
+    <!-- Footer with tagline -->
+    <footer>
+        <p><span>Transparency. Growth. Innovation.</span></p>
+    </footer>
 
     <script>
         const uploadPhoto = document.getElementById('uploadPhoto');
         const canvas = document.getElementById('photoCanvas');
         const ctx = canvas.getContext('2d');
         const downloadBtn = document.getElementById('downloadBtn');
-        const zoomInBtn = document.getElementById('zoomInBtn');
-        const zoomOutBtn = document.getElementById('zoomOutBtn');
+        const video = document.getElementById('video');
+        const captureBtn = document.getElementById('captureBtn');
         
+        // Sliders
+        const zoomSlider = document.getElementById('zoomSlider');
+        const moveHorizontalSlider = document.getElementById('moveHorizontalSlider');
+        const moveVerticalSlider = document.getElementById('moveVerticalSlider');
+
         let frameImage = new Image();
         frameImage.src = 'frame.png';  // Path to your frame
-
-        let guestImage = null; // To store the uploaded image
+        
+        let guestImage = null; // To store the uploaded or captured image
         let scale = 1;
         let offsetX = 0;
         let offsetY = 0;
@@ -160,40 +202,37 @@
             const canvasAspect = canvas.width / canvas.height;
             const imageAspect = guestImage.width / guestImage.height;
 
-            // Fit image based on aspect ratio difference
             if (imageAspect > canvasAspect) {
                 scale = canvas.width / guestImage.width;  // Scale image to fit the width
             } else {
                 scale = canvas.height / guestImage.height;  // Scale image to fit the height
             }
 
+            zoomSlider.value = scale;
             offsetX = (canvas.width - guestImage.width * scale) / 2;
             offsetY = (canvas.height - guestImage.height * scale) / 2;
+
+            moveHorizontalSlider.value = offsetX;
+            moveVerticalSlider.value = offsetY;
         }
 
         // Function to draw the frame and guest image
         function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
-            // Clip the canvas to a circular area
             ctx.save();
             ctx.beginPath();
             ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width / 2, 0, Math.PI * 2);
             ctx.closePath();
             ctx.clip();
 
-            // Draw the guest image if available
             if (guestImage) {
                 const imgWidth = guestImage.width * scale;
                 const imgHeight = guestImage.height * scale;
-
                 ctx.drawImage(guestImage, offsetX, offsetY, imgWidth, imgHeight);
             }
 
-            // Restore the canvas state
             ctx.restore();
-
-            // Draw the static frame over it
             ctx.drawImage(frameImage, 0, 0, canvas.width, canvas.height);
         }
 
@@ -212,15 +251,53 @@
             reader.readAsDataURL(e.target.files[0]);
         });
 
-        // Zoom In and Zoom Out functionality
-        zoomInBtn.addEventListener('click', () => {
-            scale *= 1.1; // Increase scale by 10%
-            drawCanvas();
+        // *Capture Photo from Camera*
+        captureBtn.addEventListener('click', async () => {
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                video.style.display = 'block';
+                captureBtn.textContent = 'Take Photo';
+
+                captureBtn.onclick = () => {
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = video.videoWidth;
+                    tempCanvas.height = video.videoHeight;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    tempCtx.drawImage(video, 0, 0, tempCanvas.width, tempCanvas.height);
+
+                    guestImage = new Image();
+                    guestImage.onload = () => {
+                        fitImageToCanvas();  // Scale and fit the image
+                        drawCanvas();  // Draw canvas with captured photo and frame
+                        downloadBtn.disabled = false; // Enable download button
+                    };
+                    guestImage.src = tempCanvas.toDataURL('image/png');
+
+                    const tracks = video.srcObject.getTracks();
+                    tracks.forEach(track => track.stop());
+                    video.style.display = 'none';
+                    captureBtn.textContent = 'Capture Photo with Camera';
+                };
+            }
         });
 
-        zoomOutBtn.addEventListener('click', () => {
-            scale *= 0.9; // Decrease scale by 10%
-            drawCanvas();
+        // Update canvas when zoom slider changes
+        zoomSlider.addEventListener('input', (e) => {
+            scale = parseFloat(e.target.value);  // Set the scale from slider
+            drawCanvas();  // Redraw the canvas with new zoom
+        });
+
+        // Update canvas when horizontal move slider changes
+        moveHorizontalSlider.addEventListener('input', (e) => {
+            offsetX = parseFloat(e.target.value);  // Set the offsetX from slider
+            drawCanvas();  // Redraw the canvas with new horizontal position
+        });
+
+        // Update canvas when vertical move slider changes
+        moveVerticalSlider.addEventListener('input', (e) => {
+            offsetY = parseFloat(e.target.value);  // Set the offsetY from slider
+            drawCanvas();  // Redraw the canvas with new vertical position
         });
 
         // Mouse events for dragging the image
@@ -250,38 +327,10 @@
             isDragging = false;
         });
 
-        // Touch events for dragging the image on mobile
-        canvas.addEventListener('touchstart', (e) => {
-            if (guestImage) {
-                const touch = e.touches[0];
-                startX = touch.clientX - canvas.offsetLeft;
-                startY = touch.clientY - canvas.offsetTop;
-                isDragging = true;
-            }
-        });
-
-        canvas.addEventListener('touchmove', (e) => {
-            if (isDragging && guestImage) {
-                const touch = e.touches[0];
-                const dx = touch.clientX - canvas.offsetLeft - startX;
-                const dy = touch.clientY - canvas.offsetTop - startY;
-                offsetX += dx;
-                offsetY += dy;
-                startX = touch.clientX - canvas.offsetLeft;
-                startY = touch.clientY - canvas.offsetTop;
-                drawCanvas();
-                e.preventDefault();  // Prevent page from scrolling
-            }
-        });
-
-        canvas.addEventListener('touchend', () => {
-            isDragging = false;
-        });
-
         // Download functionality
         downloadBtn.addEventListener('click', () => {
             const link = document.createElement('a');
-            link.download = 'photo_with_frame.png';
+            link.download = 'Your DP for Sanjay.png';
             link.href = canvas.toDataURL('image/png');
             link.click();
         });
